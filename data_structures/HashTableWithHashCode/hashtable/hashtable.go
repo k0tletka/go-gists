@@ -73,23 +73,33 @@ func (h *HashTable) rebuildBucket() {
     bucketSize := len(h.bucket)
     var newBucket []*hashTableElement
 
-    for bucketNotFilled := true; bucketNotFilled; {
+    for {
+        bucketFilled := true
         bucketSize *= 2
         newBucket = make([]*hashTableElement, bucketSize, bucketSize)
 
         // Copy element from existing bucket to extended new, if relative collision occurs again,
         // we must trash newBucket and create new with x2 size
         for _, elem := range h.bucket {
+            if elem == nil {
+                continue
+            }
+
             absoluteHash := elem.SourceElement.HashCode()
             relativeHash := int64(math.Mod(float64(absoluteHash), float64(len(newBucket))))
 
             currentElement := newBucket[relativeHash]
 
             if currentElement != nil {
+                bucketFilled = false
                 break // Collision detected, rebuild bucket again
             }
 
             newBucket[relativeHash] = elem
+        }
+
+        if bucketFilled {
+            break
         }
     }
 

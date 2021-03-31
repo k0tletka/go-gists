@@ -52,3 +52,31 @@ func TestHashTablePutAndGet(t *testing.T) {
         t.Errorf("TestHashTablePutAndGet: Excepted No name, got %v\n", elemStr)
     }
 }
+
+func TestHashTableRebuildBucket(t *testing.T) {
+    table := hashtable.CreateHashTable(nil, 4)
+
+    // Putting elements with hashcodes, thats will
+    // produce same relative hash with bucketSize equals 4
+    table.PutElement(StringHash("a"), 1)
+    table.PutElement(StringHash("e"), 1)
+
+    // Test to get element
+    elem, ok := table.GetElement(StringHash("a"))
+    if !ok {
+        t.Error("TestHashTableRebuildBucket: Element with key a not found, while it must be available")
+    }
+
+    if elemNum, ok := elem.(int); !ok || elemNum != 1 {
+        t.Errorf("TestHashTableRebuildBucket: Element with key a: Except 1, got %v\n", elemNum)
+    }
+
+    elem, ok = table.GetElement(StringHash("e"))
+    if !ok {
+        t.Error("TestHashTableRebuildBucket: Element with key e not found, while it must be available")
+    }
+
+    if elemNum, ok := elem.(int); !ok || elemNum != 1 {
+        t.Errorf("TestHashTableRebuildBucket: Element with key e: Except 1, got %v\n", elemNum)
+    }
+}
