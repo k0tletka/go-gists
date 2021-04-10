@@ -4,3 +4,6 @@ There are my golang gists, that I will publish time by time. A section list prov
 
 ## 1. Algorithms
 In these section, I writing different data structures and algorithms, such as hashtable or binary search.
+
+## 2. Image manupulation
+There are some gists, with image manupulation (grayscale convert and etc.)
