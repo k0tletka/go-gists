@@ -21,15 +21,6 @@ func main() {
         panic(err)
     }
 
-    // Convert readed image into in-memory image
-    rwImage := image.NewRGBA(image.Rect(0, 0, roImage.Bounds().Max.X, roImage.Bounds().Max.Y))
-
-    for x := roImage.Bounds().Min.X; x < roImage.Bounds().Max.X; x++ {
-        for y := roImage.Bounds().Min.Y; y < roImage.Bounds().Max.Y; y++ {
-            rwImage.Set(x, y, rwImage.ColorModel().Convert(roImage.At(x, y)))
-        }
-    }
-
     var newWidth, newHeight int;
 
     fmt.Print("Enter width and height of the output: ")
@@ -43,7 +34,7 @@ func main() {
     }
 
     // Resizing image
-    resImage := resizeImage(rwImage, newWidth, newHeight)
+    resImage := resizeImage(roImage, newWidth, newHeight)
 
     // Output image
     newFile, err := os.Create("test_images/test_new.png")
@@ -58,7 +49,7 @@ func main() {
     }
 }
 
-func resizeImage(img *image.RGBA, newWidth, newHeight int) image.Image {
+func resizeImage(img image.Image, newWidth, newHeight int) image.Image {
     // Create result image
     resImage := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
@@ -73,11 +64,11 @@ func resizeImage(img *image.RGBA, newWidth, newHeight int) image.Image {
         for y := 0; y < yLoopEnd; y++ {
             xCur := map[bool]int{true: x, false: int(float64(x) / xScale)}[xScale <= 1.0]
             yCur := map[bool]int{true: y, false: int(float64(y) / yScale)}[yScale <= 1.0]
-            pixel := img.RGBAAt(xCur, yCur)
+            pixel := img.At(xCur, yCur)
 
             xNew := map[bool]int{true: int(float64(x) * xScale), false: x}[xScale <= 1.0]
             yNew := map[bool]int{true: int(float64(y) * yScale), false: y}[yScale <= 1.0]
-            resImage.Set(xNew, yNew, pixel)
+            resImage.Set(xNew, yNew, resImage.ColorModel().Convert(pixel))
         }
     }
 
