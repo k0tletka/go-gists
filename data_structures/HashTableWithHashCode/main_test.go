@@ -2,7 +2,7 @@ package main
 
 import (
     "testing"
-    "./hashtable"
+    "github.com/k0tletka/go-gists/data_structures/HashTableWithHashCode/hashtable"
 )
 
 // Hashable type for strings

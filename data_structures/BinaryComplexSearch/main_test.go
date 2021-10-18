@@ -2,7 +2,7 @@ package main
 
 import (
     "testing"
-    "./binarys"
+    "github.com/k0tletka/go-gists/data_structures/BinaryComplexSearch/binarys"
 )
 
 func initBinarySearcher() *binarys.BinaryComplexSearch {
