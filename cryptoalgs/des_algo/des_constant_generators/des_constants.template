@@ -1,0 +1,19 @@
+// Auto generated, do not edit!
+package des
+
+const (
+    IPPermutation       [64]byte =  {<<.IPPermutationData | join>>}
+    ExpandEFunction     [48]byte =  {<<.ExpandEFunctionData | join>>}
+
+    SPermutation        [8][4][16]byte = {<<range .SPermutationData>>
+        {<<range .>>
+            {<<. | join>>},<<end>>
+        },<<end>>
+    }
+
+    PPermutation        [32]byte =  {<<.PPermutationData | join>>}
+    KeyPermutation      [56]byte =  {<<.KeyPermutationData | join>>}
+    KeyShift            [16]byte =  {<<.KeyShiftData | join>>}
+    KeyPostPermutation  [48]byte =  {<<.KeyPostPermutationData | join>>}
+    IPPostPermutation   [64]byte =  {<<.IPPostPermutationData | join>>}
+)
