@@ -70,7 +70,7 @@ func generateKeys(key uint64) (res [16]uint64) {
 
 func performIPStraightPermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        res |= block & (1 << (IPPermutation[i] - 1))
+        res |= (block & (1 << (IPPermutation[i] - 1))) << i
     }
 
     return
@@ -78,7 +78,7 @@ func performIPStraightPermutation(block uint64) (res uint64) {
 
 func performEExpandFunction(block uint32) (res uint64) {
     for i := 0; i < len(ExpandEFunction); i++ {
-        res |= uint64(block) & (1 << (ExpandEFunction[i] - 1))
+        res |= (uint64(block) & (1 << (ExpandEFunction[i] - 1))) << i
     }
 
     return res
@@ -104,7 +104,7 @@ func performSPermutationFor(sPermutationBlock int, block uint64) byte {
 
 func performPPermutation(block uint32) (res uint32) {
     for i := 0; i < len(PPermutation); i++ {
-        res |= block & (1 << (PPermutation[i] - 1))
+        res |= (block & (1 << (PPermutation[i] - 1))) << i
     }
 
     return res
@@ -112,7 +112,7 @@ func performPPermutation(block uint32) (res uint32) {
 
 func performIPReversePermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        res |= block & (1 << (IPPostPermutation[i] - 1))
+        res |= (block & (1 << (IPPostPermutation[i] - 1))) << i
     }
 
     return
