@@ -2,8 +2,18 @@ package main
 
 import (
     "fmt"
+    "strings"
+
+    "cryptoalgs-des/des"
 )
 
 func main() {
-    fmt.Println("Hello, world")
+    // Some encrypting data
+    reader := strings.NewReader("Hello, world!")
+    key := []byte("P@ssw0r")
+
+    buffer := &strings.Builder{}
+    des.EncryptData(key, reader, buffer)
+
+    fmt.Println(buffer.String)
 }

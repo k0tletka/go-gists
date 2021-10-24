@@ -23,8 +23,8 @@ const (
     KeyShiftAmount = 16
     KeyPostPermutationAmount = 48
 
-    ConstantTemplateFilePath = "des_constants.template"
-    ConstantTemplateSavePath = "../des/des_constants.go"
+    VariableTemplateFilePath = "des_variables.template"
+    VariableTemplateSavePath = "../des/des_variables.go"
 )
 
 type TemplateData struct {
@@ -90,7 +90,7 @@ func main() {
         ),
     }
 
-    outputTmpl := template.Must(template.New(ConstantTemplateFilePath).Funcs(map[string]interface{}{
+    outputTmpl := template.Must(template.New(VariableTemplateFilePath).Funcs(map[string]interface{}{
         "join": func(elems []byte) string {
             elemsToJoin := make([]string, 0, len(elems))
 
@@ -100,9 +100,9 @@ func main() {
 
             return strings.Join(elemsToJoin, ", ")
         },
-    }).Delims("<<", ">>").ParseFiles(ConstantTemplateFilePath))
+    }).Delims("<<", ">>").ParseFiles(VariableTemplateFilePath))
 
-    fd, err := os.OpenFile(ConstantTemplateSavePath, os.O_WRONLY | os.O_CREATE, 0755)
+    fd, err := os.OpenFile(VariableTemplateSavePath, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0755)
 
     if err != nil {
         panic(err)
