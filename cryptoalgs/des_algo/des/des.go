@@ -24,7 +24,7 @@ func EncryptData(key []byte, data io.Reader, output io.Writer) {
     blockIPPermutated := performIPStraightPermutation(blockUint)
 
     var roundsResult [roundsAmount + 1][2]uint32
-    roundsResult[0][0], roundsResult[0][1] = uint32(blockUint), uint32(blockUint >> 32)
+    roundsResult[0][0], roundsResult[0][1] = uint32(blockIPPermutated), uint32(blockIPPermutated >> 32)
 
     // Generate keys of each round
     keyUint := convertByteSliceToUint64(key)
@@ -62,7 +62,7 @@ func feistelFunction(block uint32, key uint64) (res uint32) {
 
 func generateKeys(key uint64) (res [16]uint64) {
     for i := 0; i < len(res); i++ {
-        res = key
+        res[i] = key
     }
 
     return
@@ -86,7 +86,7 @@ func performEExpandFunction(block uint32) (res uint64) {
 
 func performSPermutation(block uint64) (res uint32) {
     for sPermutationBlock := 0; sPermutationBlock < 8; sPermutationBlock++ {
-        res |= uint64(performSPermutationFor(sBlock, block)) << 4 * sPermutationBlock
+        res |= uint32(performSPermutationFor(sPermutationBlock, block)) << uint32(4 * sPermutationBlock)
     }
 
     return
@@ -124,7 +124,7 @@ func convertByteSliceToUint64(block []byte) (res uint64) {
     }
 
     for i, b := range block {
-        res |= b << i * 8
+        res |= uint64(b) << uint64(i * 8)
     }
 
     return
