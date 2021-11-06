@@ -2,51 +2,64 @@ package des
 
 import (
     "io"
+    "encoding/binary"
 )
 
 const (
     roundsAmount = 16
 )
 
-func EncryptData(key []byte, data io.Reader, output io.Writer) {
+func EncryptData(key []byte, data io.Reader, output io.Writer) error {
     if len(key) > 7 {
         panic("Invalid length of key")
     }
-
-    var block [8]byte
-
-    if _, err := data.Read(block[:]); err != nil {
-        panic(err)
-    }
-
-    // Perform initial permutation
-    blockUint := convertByteSliceToUint64(block[:])
-    blockIPPermutated := performIPStraightPermutation(blockUint)
-
-    var roundsResult [roundsAmount + 1][2]uint32
-    roundsResult[0][0], roundsResult[0][1] = uint32(blockIPPermutated), uint32(blockIPPermutated >> 32)
 
     // Generate keys of each round
     keyUint := convertByteSliceToUint64(key)
     keys := generateKeys(keyUint)
 
-    // Start rounds loop
-    for round := 1; round <= roundsAmount; round++ {
-        // L{i} = R{i - 1}
-        roundsResult[round][0] = roundsResult[round - 1][1]
+    var block [8]byte
+    var n int
+    var err error
 
-        // R{i} = L{i - 1} XOR f(R{i - 1}, k{i})
-        roundsResult[round][1] = roundsResult[round - 1][1] ^ feistelFunction(roundsResult[round - 1][0], keys[round - 1])
-    }
+    for {
+        if n, err = data.Read(block[:]); err == io.EOF {
+            return nil
+        } else if err != nil {
+            return err
+        }
 
-    var finalBlock uint64
-    finalBlock = uint64(roundsResult[16][0]) + uint64(roundsResult[16][1]) << 32
+        if n < 8 {
+            for i := n; i < 8; i++ {
+                block[i] = 0
+            }
+        }
 
-    // Perform reverse of initial permutation
-    resultBlock := performIPReversePermutation(finalBlock)
+        // Perform initial permutation
+        blockUint := convertByteSliceToUint64(block[:])
+        blockIPPermutated := performIPStraightPermutation(blockUint)
 
-    if _, err := output.Write(convertUint64ToByteSlice(resultBlock)); err != nil {
-        panic(err)
+        var roundsResult [roundsAmount + 1][2]uint32
+        roundsResult[0][0], roundsResult[0][1] = uint32(blockIPPermutated), uint32(blockIPPermutated >> 32)
+
+        // Start rounds loop
+        for round := 1; round <= roundsAmount; round++ {
+            // L{i} = R{i - 1}
+            roundsResult[round][0] = roundsResult[round - 1][1]
+
+            // R{i} = L{i - 1} XOR f(R{i - 1}, k{i})
+            roundsResult[round][1] = roundsResult[round - 1][1] ^ feistelFunction(roundsResult[round - 1][0], keys[round - 1])
+        }
+
+        var finalBlock uint64
+        finalBlock = uint64(roundsResult[16][0]) + uint64(roundsResult[16][1]) << 32
+
+        // Perform reverse of initial permutation
+        resultBlock := performIPReversePermutation(finalBlock)
+
+        if _, err := output.Write(convertUint64ToByteSlice(resultBlock)); err != nil {
+            return err
+        }
     }
 }
 
@@ -70,7 +83,8 @@ func generateKeys(key uint64) (res [16]uint64) {
 
 func performIPStraightPermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        res |= (block & (1 << (IPPermutation[i] - 1))) << i
+        designatedBit := IPPermutation[i] - 1
+        res |= block & (1 << designatedBit) >> designatedBit << i
     }
 
     return
@@ -78,7 +92,8 @@ func performIPStraightPermutation(block uint64) (res uint64) {
 
 func performEExpandFunction(block uint32) (res uint64) {
     for i := 0; i < len(ExpandEFunction); i++ {
-        res |= (uint64(block) & (1 << (ExpandEFunction[i] - 1))) << i
+        designatedBit := ExpandEFunction[i] - 1
+        res |= uint64(block) & (1 << designatedBit) >> designatedBit << i
     }
 
     return res
@@ -112,28 +127,30 @@ func performPPermutation(block uint32) (res uint32) {
 
 func performIPReversePermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        res |= (block & (1 << (IPPostPermutation[i] - 1))) << i
+        designatedBit := IPPostPermutation[i] - 1
+        res |= block & (1 << designatedBit) >> designatedBit << i
     }
 
     return
 }
 
-func convertByteSliceToUint64(block []byte) (res uint64) {
+func convertByteSliceToUint64(block []byte) uint64 {
     if len(block) > 8 {
         panic("Invalid length of block")
     }
 
-    for i, b := range block {
-        res |= uint64(b) << uint64(i * 8)
+    if len(block) < 8 {
+        for i := len(block); i < 8; i++ {
+            block = append(block, 0)
+        }
     }
 
-    return
+    return binary.BigEndian.Uint64(block)
 }
 
-func convertUint64ToByteSlice(block uint64) (res []byte) {
-    for i := 0; i < 8; i++ {
-        res = append(res, byte(block >> i * 8))
-    }
+func convertUint64ToByteSlice(block uint64) []byte {
+    res := make([]byte, 8)
 
-    return
+    binary.BigEndian.PutUint64(res, block)
+    return res
 }
