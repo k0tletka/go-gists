@@ -1,6 +1,7 @@
 package des
 
 import (
+    "fmt"
     "bytes"
     "testing"
 )
@@ -45,6 +46,29 @@ func TestIPReversePermutation(t *testing.T) {
     input, excepted = 0x0F0F0F0F0F0F0F0F, 0xFFFFFFFF00000000
 
     if got := performIPReversePermutation(input); got != excepted {
+        t.Errorf("%s: invalid value, excepted %x, got %x\n", t.Name(), excepted, got)
+    }
+}
+
+func TestExpandEFunction(t *testing.T) {
+    var input uint32
+    var excepted uint64
+
+    input, excepted = 0xFFFF8001, 0xFFFFFFC00003
+
+    if got := performEExpandFunction(input); got != excepted {
+        t.Errorf("%s: invalid value, excepted %x, got %x\n", t.Name(), excepted, got)
+    }
+}
+
+func TestPPermutation(t *testing.T) {
+    var input uint32
+    var excepted uint32
+
+    input, excepted = 0x8A53DA5A, 0xFFFF0000
+    fmt.Printf("%b\n", input)
+
+    if got := performPPermutation(input); got != excepted {
         t.Errorf("%s: invalid value, excepted %x, got %x\n", t.Name(), excepted, got)
     }
 }

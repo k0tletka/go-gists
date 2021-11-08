@@ -83,8 +83,10 @@ func generateKeys(key uint64) (res [16]uint64) {
 
 func performIPStraightPermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        designatedBit := IPPermutation[i] - 1
-        res |= block & (1 << designatedBit) >> designatedBit << i
+        designatedBit := IPPermutation[i]
+        shiftAmount := byte(len(IPPermutation)) - designatedBit
+
+        res |= block & (1 << shiftAmount) >> shiftAmount << (len(IPPermutation) - 1  - i)
     }
 
     return
@@ -92,34 +94,39 @@ func performIPStraightPermutation(block uint64) (res uint64) {
 
 func performEExpandFunction(block uint32) (res uint64) {
     for i := 0; i < len(ExpandEFunction); i++ {
-        designatedBit := ExpandEFunction[i] - 1
-        res |= uint64(block) & (1 << designatedBit) >> designatedBit << i
+        designatedBit := ExpandEFunction[i]
+        shiftAmount := 32 - designatedBit
+
+        res |= uint64(block) & (1 << shiftAmount) >> shiftAmount << (len(ExpandEFunction) - 1 - i)
     }
 
     return res
 }
 
 func performSPermutation(block uint64) (res uint32) {
-    for sPermutationBlock := 0; sPermutationBlock < 8; sPermutationBlock++ {
-        res |= uint32(performSPermutationFor(sPermutationBlock, block)) << uint32(4 * sPermutationBlock)
+    for blockIndex := 0; blockIndex < 8; blockIndex++ {
+        res |= uint32(performSPermutationFor(blockIndex, block)) << uint32(4 * blockIndex)
     }
 
     return
 }
 
-func performSPermutationFor(sPermutationBlock int, block uint64) byte {
-    block &= 0x3F << (sPermutationBlock * 6)
-    block >>= sPermutationBlock * 6
+func performSPermutationFor(blockIndex int, block uint64) byte {
+    block &= 0x3F << (blockIndex * 6)
+    block >>= blockIndex * 6
 
     a := block & 1 + (block & 0x20 >> 0x10)
     b := (block & 0x1E) >> 1
 
-    return SPermutation[sPermutationBlock][a][b]
+    return SPermutation[blockIndex][a][b]
 }
 
 func performPPermutation(block uint32) (res uint32) {
     for i := 0; i < len(PPermutation); i++ {
-        res |= (block & (1 << (PPermutation[i] - 1))) << i
+        designatedBit := PPermutation[i]
+        shiftAmount := byte(len(PPermutation)) - designatedBit
+
+        res |= block & (1 << shiftAmount) >> shiftAmount << (len(PPermutation) - 1 - i)
     }
 
     return res
@@ -127,8 +134,10 @@ func performPPermutation(block uint32) (res uint32) {
 
 func performIPReversePermutation(block uint64) (res uint64) {
     for i := 0; i < len(IPPermutation); i++ {
-        designatedBit := IPPostPermutation[i] - 1
-        res |= block & (1 << designatedBit) >> designatedBit << i
+        designatedBit := IPPostPermutation[i]
+        shiftAmount := byte(len(IPPermutation)) - designatedBit
+
+        res |= block & (1 << shiftAmount) >> shiftAmount << (len(IPPermutation) - 1 - i)
     }
 
     return
