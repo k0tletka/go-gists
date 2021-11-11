@@ -7,10 +7,13 @@ import (
 
 const (
     roundsAmount = 16
+
+    sPermutationLength = 48
+    sPermutationResultAmount = 32
 )
 
 func EncryptData(key []byte, data io.Reader, output io.Writer) error {
-    if len(key) > 7 {
+    if len(key) != 7 {
         panic("Invalid length of key")
     }
 
@@ -19,20 +22,13 @@ func EncryptData(key []byte, data io.Reader, output io.Writer) error {
     keys := generateKeys(keyUint)
 
     var block [8]byte
-    var n int
     var err error
 
     for {
-        if n, err = data.Read(block[:]); err == io.EOF {
+        if _, err = data.Read(block[:]); err == io.EOF {
             return nil
         } else if err != nil {
             return err
-        }
-
-        if n < 8 {
-            for i := n; i < 8; i++ {
-                block[i] = 0
-            }
         }
 
         // Perform initial permutation
@@ -105,17 +101,18 @@ func performEExpandFunction(block uint32) (res uint64) {
 
 func performSPermutation(block uint64) (res uint32) {
     for blockIndex := 0; blockIndex < 8; blockIndex++ {
-        res |= uint32(performSPermutationFor(blockIndex, block)) << uint32(4 * blockIndex)
+        shiftAmount := sPermutationResultAmount - (blockIndex * 4) - 4
+        res |= uint32(performSPermutationFor(blockIndex, block)) << uint32(shiftAmount)
     }
 
     return
 }
 
 func performSPermutationFor(blockIndex int, block uint64) byte {
-    block &= 0x3F << (blockIndex * 6)
-    block >>= blockIndex * 6
+    block &= 0x3F << (sPermutationLength - (blockIndex * 6) - 6)
+    block >>= sPermutationLength - (blockIndex * 6) - 6
 
-    a := block & 1 + (block & 0x20 >> 0x10)
+    a := (block & 1) + (block & 0x20 >> 0x08)
     b := (block & 0x1E) >> 1
 
     return SPermutation[blockIndex][a][b]
@@ -146,12 +143,6 @@ func performIPReversePermutation(block uint64) (res uint64) {
 func convertByteSliceToUint64(block []byte) uint64 {
     if len(block) > 8 {
         panic("Invalid length of block")
-    }
-
-    if len(block) < 8 {
-        for i := len(block); i < 8; i++ {
-            block = append(block, 0)
-        }
     }
 
     return binary.BigEndian.Uint64(block)

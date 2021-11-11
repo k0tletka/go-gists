@@ -72,3 +72,14 @@ func TestPPermutation(t *testing.T) {
         t.Errorf("%s: invalid value, excepted %x, got %x\n", t.Name(), excepted, got)
     }
 }
+
+func TestSPermutation(t *testing.T) {
+    var input uint64
+    var excepted uint32
+
+    input, excepted = 0x00000C031E583203, 0xFFFFFFFF
+
+    if got := performSPermutation(input); got != excepted {
+        t.Errorf("%s: invalid value, excepted %x, got %x\n", t.Name(), excepted, got)
+    }
+}
