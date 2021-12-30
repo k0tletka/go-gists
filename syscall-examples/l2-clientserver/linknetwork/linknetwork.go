@@ -61,9 +61,6 @@ func createSocket(interfaceName string) (fd int, interf *net.Interface, err erro
         return
     }
 
-    var hardwareAddr [8]byte
-    copy(hardwareAddr[:], interf.HardwareAddr)
-
     // Create sockaddr struct and bind socket
     sockaddr := unix.SockaddrLinklayer {
         Protocol: uint16(htons(networkProtocol, 16)),
